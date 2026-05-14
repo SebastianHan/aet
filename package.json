@@ -1,0 +1,31 @@
+{
+  "name": "aet",
+  "version": "1.1.0",
+  "description": "AET (Agentic Engineering Team) suite for Claude Code: Full software development lifecycle with agent collaboration, requirement analysis, development, and testing",
+  "main": "lib/skills-core.js",
+  "scripts": {
+    "test": "node tests/structure.test.js",
+    "test:structure": "node tests/structure.test.js",
+    "test:platforms": "node tests/platform-validation.js",
+    "validate": "npm test"
+  },
+  "keywords": [
+    "skills",
+    "claude-code",
+    "opencode",
+    "codex",
+    "ai-assistants"
+  ],
+  "author": "leon-wang2021",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://atomgit.com/leon-wang2021/agent-dev-team.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.14.0"
+  }
+}

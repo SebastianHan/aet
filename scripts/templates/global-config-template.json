@@ -1,0 +1,334 @@
+{
+  "version": "1.0",
+  "_comment": "全局配置模板 - 包含跨项目共享的配置项",
+  "capability_scenarios": {
+    "_comment": "工作流定义：定义不同的工作流程，每个 workflow 包含一系列 agent 执行步骤",
+    "code": {
+      "name": "代码功能开发流程",
+      "description": "从设计到实现、验证、发布的完整开发流程",
+      "agent_workflow": [
+        { "agent_id": "aet-design", "before": null, "after": "confirm" },
+        { "agent_id": "aet-implementing-requirement", "before": null, "after": "confirm" },
+        { "agent_id": "aet-test", "before": null, "after": "confirm" },
+        { "agent_id": "aet-delivery", "before": null, "after": null }
+      ]
+    },
+    "bugfix": {
+      "name": "Bug修复流程",
+      "description": "从问题诊断到修复、验证、发布的bug修复流程",
+      "agent_workflow": [
+        {
+          "agent_id": "aet-bugfix",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "agent": {
+      "name": "Agent项目开发流程",
+      "description": "Agent/Skill/Command项目开发流程：从需求分析、设计、开发、测试到交付",
+      "agent_workflow": [
+        { "agent_id": "aet-agent-design", "before": null, "after": "confirm" },
+        { "agent_id": "aet-agent-implementing-requirement", "before": null, "after": "confirm" },
+        { "agent_id": "aet-agent-test", "before": null, "after": "confirm" },
+        { "agent_id": "aet-agent-delivery", "before": null, "after": null }
+      ]
+    },
+    "aet-operating-project-analysis": {
+      "name": "项目分析流程",
+      "description": "分析项目架构、模块结构和开发原则，生成项目文档",
+      "agent_workflow": [
+        { "agent_id": "aet-analyzing-project", "before": null, "after": null }
+      ]
+    },
+    "aet-setup-config": {
+      "name": "配置初始化流程",
+      "description": "初始化项目配置，设置平台凭证和仓库信息",
+      "agent_workflow": [
+        { "agent_id": "aet-setup-config", "before": null, "after": null }
+      ]
+    },
+    "release": {
+      "name": "Release发布流程",
+      "description": "根据代码/文档变更自动生成release版本，支持模版化发布说明",
+      "agent_workflow": [
+        { "agent_id": "aet-release", "before": null, "after": null }
+      ]
+    },
+    "aet-prd": {
+      "name": "aet-prd",
+      "description": "PRD主编排agent - 通过 prompt 中的定义驱动各阶段",
+      "permission": {
+        "agent_handover": "allow",
+        "step_handover": "allow"
+      },
+      "step_workflow": [],
+      "agent_workflow": [
+        {
+          "agent_id": "aet-prd",
+          "before": null,
+          "after": null
+        }
+      ]
+    }
+  },
+  "hooks": {
+    "_comment": "钩子配置：定义工作流中 agent 之间的过渡行为",
+    "auto": {
+      "description": "自动进入下一阶段",
+      "promptTemplate": null,
+      "options": null
+    },
+    "confirm": {
+      "description": "请用户确认是该阶段任务是否完成",
+      "promptTemplate": "请直接必须使用 question 工具向用户提问，不得有任何其他操作。\n\n问题：\"{description}\"\n{options}\n",
+      "options": [
+        {
+          "label": "完成",
+          "value": "approve"
+        },
+        {
+          "label": "需要修改",
+          "value": "reject"
+        }
+      ]
+    },
+    "stage_review": {
+      "description": "自动进入评审阶段",
+      "promptTemplate": null,
+      "options": null
+    }
+  },
+  "agents": {
+    "_comment": "Agent 配置：定义每个 agent 的执行步骤",
+    "aet-router": {
+      "name": "aet-router",
+      "description": "AET入口 - 根据用户意图路由到合适的工作流程",
+      "step_workflow": []
+    },
+    "aet-analyzing-project": {
+      "name": "aet-general",
+      "description": "负责项目架构分析、模块边界划分、开发原则提炼",
+      "step_workflow": [
+        {
+          "step_id": "project_analysis_overview",
+          "name": "项目分析概述",
+          "description": "<workflow_context>\n    <workflow_name>projectAnalysis</workflow_name>\n    <stages>\n      <stage id=\"systemAnalysis\"/>\n      <stage id=\"componentAnalysis\"/>\n    </stages>\n    <curr_stage id=\"systemAnalysis\"/>\n    <instruction>\n      This is a specific stage within the workflow. DO NOT perform any tasks outside of the curr_stage and prohibited from executing any subsequent steps. Upon completion, provide a summary (within 50 words) and terminate the output immediately.\n    </instruction>\n</workflow_context>\n\n## Task\n\nPerform in-depth analysis of each module/component identified in Stage 1, and generate separate component detail files.\n\n## Execution Steps\n\n- [Proc1.1] Confirm the target project path\n- [Proc1.2] Use the aet-analyzing-project skill and route to `project-overview`\n- [Proc2] Execute according to `references/phase1-project-overview.md`, and skipping steps is prohibited\n- [Proc3] Use the question tool to Confirm the user's intent (continue to component analysis or end the workflow)\n- [Proc4.1] Use the `step_handover` tool to explicitly hand over the work to the `component-analysis` stage or end the workflow.\n- [Proc4.2] Stop\n\n## Output\n\n**output path**: `<projectDir>/.aet/project-analysis/` (output directly to the analysis project directory)\n\n现在请遵照执行",
+          "before": null,
+          "after": null
+        },
+        {
+          "step_id": "project_analysis_detail",
+          "name": "项目分析详细",
+          "description": "<workflow_context>\n    <workflow_name>projectAnalysis</workflow_name>\n    <stages>\n      <stage id=\"systemAnalysis\"/>\n      <stage id=\"componentAnalysis\"/>\n    </stages>\n    <curr_stage id=\"componentAnalysis\"/>\n    <instruction>\n      This is a specific stage within the workflow. DO NOT perform any tasks outside of the curr_stage and prohibited from executing any subsequent steps. Upon completion, provide a summary (within 50 words) and terminate the output immediately.\n    </instruction>\n</workflow_context>\n\n## Task\n\nPerform in-depth analysis of each module/component identified in Stage 1, and generate separate component detail files.\n\n## Execution Steps\n\n- [Proc1.1] Confirm the target project path\n- [Proc1.2] Use the aet-analyzing-project skill and route to `component-analysis`\n- [Proc1.3] Load `overview.md`, `architecture.md`, and `modules.md` to obtain the component list and related information\n- [Proc2] Execute according to `references/phase2-component-analysis.md`, and skipping steps is prohibited\n- [Proc3.1] Use the `step_handover` tool to end the workflow.\n- [Proc3.2] Stop (Only stopping the orchestration layer will help you truly hand over)\n\n## Output\n\n**output path**: `<projectDir>/.aet/project-analysis/` (output directly to the analysis project directory)\n\n现在请遵照执行",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-setup-config": {
+      "name": "aet-general",
+      "description": "负责项目配置初始化和凭证设置",
+      "step_workflow": [
+        { "step_id": "config_init", "name": "配置初始化", "description": "使用 aet-setup-config skill，初始化项目配置，设置平台凭证和仓库信息", "before": null, "after": null }
+      ]
+    },
+    "aet-design": {
+      "name": "aet-design",
+      "description": "负责需求分析、架构设计、详细设计文档编写",
+      "step_workflow": [
+        { "step_id": "requirements_analysis", "name": "需求分析", "description": "请根据 `aet-reviewing-design-docs` skill流程执行任务，并在后续流程规定处载入 `aet-analysis-and-design` skill，并路由至 `requirementAnalysis` 进行需求分析。输出`需求分析说明书.md`至规定目录下", "before": null, "after": "confirm" },
+        { "step_id": "requirements_design", "name": "需求设计", "description": "请根据 `aet-reviewing-design-docs` skill流程执行任务，并在后续流程规定处载入 `aet-analysis-and-design` skill，并路由至 `requirementDesign` 进行需求设计。输入前序需求分析的输出件`需求分析说明书.md`，输出`需求设计说明书.md`至规定目录下", "before": null, "after": "confirm" },
+        { "step_id": "development_plan", "name": "开发计划", "description": "请根据 `aet-reviewing-design-docs` skill流程执行任务，并在后续流程规定处载入 `aet-analysis-and-design` skill，并路由至 `developmentPlan` 进行开发计划制定。输入前序需求分析的输出件`需求分析说明书.md`和`需求设计说明书.md`，输出`dev-plan.md`至规定目录下", "before": null, "after": "confirm" },
+        { "step_id": "commit", "name": "提交文档", "description": "提交设计文档到 git", "before": null, "after": null }
+      ]
+    },
+    "aet-implementing-requirement": {
+      "name": "aet-implementing-requirement",
+      "description": "负责代码开发、单元测试、集成测试",
+      "step_workflow": []
+    },
+    "aet-test": {
+      "name": "aet-test",
+      "description": "负责功能验证，性能测试、安全扫描",
+      "step_workflow": []
+    },
+    "aet-delivery": {
+      "name": "aet-delivery",
+      "description": "负责功能验证、PR提交和功能交付",
+      "step_workflow": [
+        { "step_id": "validation", "name": "功能验证", "description": "使用验证流程，执行功能测试用例，验证需求完成度", "before": null, "after": "confirm" },
+        { "step_id": "aet-operating-pr-submit", "name": "提交PR", "description": "使用 aet-operating-pr skill，创建并提交PR，处理提交错误", "before": null, "after": null }
+      ]
+    },
+    "aet-bugfix": {
+      "name": "aet-bugfix",
+      "description": "负责问题诊断、修复计划、代码修复、验证和PR提交",
+      "step_workflow": [
+        { "step_id": "diagnosis", "name": "问题诊断", "description": "使用 aet-diagnosing-bug skill，系统化分析bug原因，定位根因，识别受影响文件", "before": null, "after": "confirm" },
+        { "step_id": "planning", "name": "修复计划", "description": "使用 aet-implementing-requirement skill，基于诊断报告制定修复计划", "before": null, "after": "confirm" },
+        { "step_id": "aet-implementing-requirement", "name": "修复实现", "description": "使用 aet-implementing-requirement skill，按计划修复代码", "before": null, "after": "confirm" },
+        { "step_id": "validation", "name": "修复验证", "description": "使用验证流程，验证修复效果", "before": null, "after": "confirm" },
+        { "step_id": "aet-operating-pr-submit", "name": "提交PR", "description": "使用 aet-operating-pr skill，提交修复PR", "before": null, "after": null }
+      ]
+    },
+    "aet-agent-design": {
+      "name": "aet-design",
+      "description": "负责Agent/Skill/Command项目的需求设计和开发计划",
+      "step_workflow": [
+        { "step_id": "requirements_design", "name": "需求设计", "description": "使用 aet-designing-agent-requirement skill，分析Agent项目需求，进行架构映射和载体决策，生成需求设计说明书", "before": null, "after": "confirm" },
+        { "step_id": "development_plan", "name": "开发计划", "description": "使用 aet-creating-agent-dev-plan skill，基于需求设计生成开发计划，包含任务分组和排序", "before": null, "after": "confirm" },
+        { "step_id": "commit", "name": "提交文档", "description": "提交设计文档到 git", "before": null, "after": null }
+      ]
+    },
+    "aet-agent-implementing-requirement": {
+      "name": "aet-implementing-requirement",
+      "description": "负责Agent/Skill/Command项目的代码开发，遵循aet-developing-agent规范",
+      "step_workflow": []
+    },
+    "aet-agent-test": {
+      "name": "aet-test",
+      "description": "负责Agent/Skill/Command项目的功能测试，使用OpenCode CLI模式验证",
+      "step_workflow": []
+    },
+    "aet-agent-delivery": {
+      "name": "aet-delivery",
+      "description": "负责Agent/Skill/Command项目的PR提交和交付",
+      "step_workflow": [
+        { "step_id": "validation", "name": "功能验证", "description": "验证所有测试通过，确认组件完整", "before": null, "after": "confirm" },
+        { "step_id": "aet-operating-pr-submit", "name": "提交PR", "description": "使用 aet-operating-pr skill，创建并提交PR，处理提交错误", "before": null, "after": null }
+      ]
+    },
+    "aet-release": {
+      "name": "aet-general",
+      "description": "Release管理入口 - 处理所有release相关操作（创建/删除/查询/上传/下载/完整发布流程）",
+      "step_workflow": [
+        { "step_id": "dispatch", "name": "任务分发", "description": "使用 aet-operating-release skill，根据用户输入识别意图（创建release/删除release/查询release/上传附件/下载附件/完整发布流程），执行相应操作或引导用户完成完整流程", "before": null, "after": null }
+      ]
+    },
+    "aet-prd": {
+      "name": "aet-prd",
+      "description": "PRD主编排agent - 通过 prompt 中的定义驱动各阶段，子 agent 通过 task 工具调用",
+      "permission": {
+        "agent_handover": "allow",
+        "step_handover": "allow"
+      },
+      "step_workflow": []
+    },
+    "aet-analyzing-prd": {
+      "name": "aet-general",
+      "description": "Product Analyzer - Analyzes user requirements and extracts product insights for PRD development",
+      "step_workflow": [
+        {
+          "step_id": "product_analysis",
+          "name": "产品分析",
+          "description": "使用 Skill 工具加载 aet-analyzing-prd skill，从用户描述中提取技术问题定义与约束，生成产品分析报告并保存到 .aet/prd/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-researching-prd-competitor": {
+      "name": "aet-general",
+      "description": "Competitor Researcher - Researches competitors and market trends for PRD positioning",
+      "step_workflow": [
+        {
+          "step_id": "competitor_research",
+          "name": "竞品研究",
+          "description": "使用 Skill 工具加载 aet-researching-prd-competitor skill，基于关键词搜索竞品信息，分析技术竞品与差异化机会，生成竞品研究报告并保存到 .aet/prd/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-analyzing-prd-innovation": {
+      "name": "aet-general",
+      "description": "Innovation Analyst - Analyzes innovation opportunities and risks for PRD differentiation",
+      "step_workflow": [
+        {
+          "step_id": "innovation_analysis",
+          "name": "创新分析",
+          "description": "使用 Skill 工具加载 aet-analyzing-prd-innovation skill，从竞品与需求缺口中提炼可实施的技术差异化方案，生成创新分析报告并保存到 .aet/prd/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-writing-prd": {
+      "name": "aet-general",
+      "description": "PRD Writer - Writes product requirement documents for PRD development",
+      "step_workflow": [
+        {
+          "step_id": "prd_writing",
+          "name": "PRD撰写",
+          "description": "使用 Skill 工具加载 aet-writing-prd skill，编写结构化产品需求文档（含 UX 设计），生成 PRD 文档并保存到 .aet/prd/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-building-prd-prototype": {
+      "name": "aet-general",
+      "description": "Prototype Builder - Builds interactive HTML/CSS/JS prototypes for PRD validation",
+      "step_workflow": [
+        {
+          "step_id": "prototype_building",
+          "name": "原型构建",
+          "description": "使用 Skill 工具加载 aet-building-prd-prototype skill，基于 UX 设计构建可交互的 HTML/CSS/JS 原型，保存到 .aet/prd/docs/05-prototype/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-reviewing-prd": {
+      "name": "aet-general",
+      "description": "Reviewer - Reviews stage outputs for quality assurance in PRD workflow",
+      "step_workflow": [
+        {
+          "step_id": "review",
+          "name": "评审",
+          "description": "使用 Skill 工具加载 aet-reviewing-prd skill，对各阶段输出进行质量评审，验证完整性和一致性，保存评审结果到 .aet/prd/review/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    "aet-generating-prd-artifact": {
+      "name": "aet-general",
+      "description": "Artifact Generator - Generates FR feature files and artifact manifest for PRD delivery",
+      "step_workflow": [
+        {
+          "step_id": "artifact_generation",
+          "name": "产物生成",
+          "description": "使用 Skill 工具加载 aet-generating-prd-artifact skill，整理最终产物并生成独立的特性文件（FR00X-名称.md），保存到 .aet/prd/features/ 目录",
+          "before": null,
+          "after": null
+        }
+      ]
+    }
+  },
+  "codePlatform": {
+    "_comment": "代码托管平台配置：包含多平台 Token 配置",
+    "platforms": {
+      "_comment": "多平台配置：每个平台包含 type、token、apiBaseUrl",
+      "gitcode": {
+        "type": "gitcode",
+        "_token_comment": "GitCode/AtomGit 平台 Token，支持环境变量引用：${ATOMGIT_TOKEN}",
+        "apiBaseUrl": "https://api.atomgit.com/api/v5",
+        "token": ""
+      },
+      "github": {
+        "type": "github",
+        "_token_comment": "GitHub 平台 Token，支持环境变量引用：${GITHUB_TOKEN}",
+        "apiBaseUrl": "https://api.github.com",
+        "token": ""
+      },
+      "gitlab": {
+        "type": "gitlab",
+        "_token_comment": "GitLab 平台 Token 支持环境变量引用：${GITLAB_TOKEN}",
+        "apiBaseUrl": "https://gitlab.com/api/v4",
+        "token": ""
+      }
+    }
+  }
+}

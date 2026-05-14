@@ -1,0 +1,28 @@
+{
+  "platform": "gitee",
+  "sync_interval_hours": 6,
+  "enabled": true,
+  "excluded_repos": [
+    {
+      "owner": "owner1",
+      "repo": "repo1",
+      "reason": "Test reason 1"
+    },
+    {
+      "owner": "owner2",
+      "repo": "repo2",
+      "reason": "Test reason 2"
+    },
+    {
+      "owner": "test",
+      "repo": "repo",
+      "reason": "Test"
+    },
+    {
+      "owner": "gitee",
+      "repo": "test-excluded-repo",
+      "reason": "Test exclusion"
+    }
+  ],
+  "last_sync_at": "2026-03-13T09:00:20.815102Z"
+}

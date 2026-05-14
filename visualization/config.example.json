@@ -1,0 +1,23 @@
+{
+  "codePlatform": {
+    "mode": "issue",
+    "platform": {
+      "type": "gitcode",
+      "upstream": {
+        "owner": "your-upstream-owner",
+        "repository": "your-repository"
+      },
+      "token": "your-gitcode-token",
+      "apiBaseUrl": "https://gitcode.com/api/v5",
+      "fork": {
+        "owner": "your-fork-owner",
+        "repository": "your-repository"
+      },
+      "eventReporter": {
+        "enabled": true,
+        "apiBaseUrl": "http://localhost:5001/api",
+        "timeout": 5000
+      }
+    }
+  }
+}

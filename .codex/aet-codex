@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+/**
+ * aet bootstrap script for Codex
+ * Multi-platform skill structure
+ */
+
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const homeDir = os.homedir();
+const projectSkillsDir = path.join(homeDir, '.codex', 'aet', 'skills');
+const personalSkillsDir = path.join(homeDir, '.codex', 'skills');
+const bootstrapFile = path.join(homeDir, '.codex', 'aet', '.codex', 'aet-bootstrap.md');
+
+const command = process.argv[2] || 'bootstrap';
+
+if (command === 'bootstrap') {
+  // Show bootstrap instructions
+  if (fs.existsSync(bootstrapFile)) {
+    const content = fs.readFileSync(bootstrapFile, 'utf8');
+    console.log(content);
+  } else {
+    console.log(`# aet Bootstrap`);
+    console.log(`\nInstallation complete. Skills available in: ${projectSkillsDir}`);
+  }
+
+  // List available skills
+  console.log('\n## Available Skills');
+  if (fs.existsSync(projectSkillsDir)) {
+    const skills = fs.readdirSync(projectSkillsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
+    if (skills.length > 0) {
+      console.log(`\naet skills:`);
+      skills.forEach(skill => console.log(`  - aet:${skill}`));
+    }
+  }
+
+  console.log(`\n## Tool Mapping`);
+  console.log(`- \`TodoWrite\` → \`update_plan\` (your planning/task tracking tool)`);
+  console.log(`- \`Task\` tool with subagents → Use Codex collab \`spawn_agent\` + \`wait\` when available`);
+  console.log(`- \`Subagent\` / \`Agent\` tool mentions → Map to \`spawn_agent\` (collab)`);
+  console.log(`- \`Skill\` tool → \`~/.codex/aet/.codex/aet-codex use-skill\` command`);
+  console.log(`- \`Read\`, \`Write\`, \`Edit\`, \`Bash\` → Your native tools`);
+
+  console.log(`\n## Skills location`);
+  console.log(`- aet skills: ~/.codex/aet/skills/`);
+  console.log(`- Personal skills: ~/.codex/skills/ (override aet when names match)`);
+} else if (command === 'use-skill') {
+  const skillName = process.argv[3];
+  if (!skillName) {
+    console.error('Usage: use-skill <skill-name>');
+    process.exit(1);
+  }
+
+  const skillPath = path.join(projectSkillsDir, skillName, 'SKILL.md');
+  if (!fs.existsSync(skillPath)) {
+    console.error(`Skill not found: ${skillName}`);
+    process.exit(1);
+  }
+
+  const content = fs.readFileSync(skillPath, 'utf8');
+  console.log(content);
+} else if (command === 'list') {
+  if (fs.existsSync(projectSkillsDir)) {
+    const skills = fs.readdirSync(projectSkillsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
+    console.log(`aet skills:`);
+    skills.forEach(skill => console.log(`  - ${skill}`));
+  } else {
+    console.log('No skills found');
+  }
+} else {
+  console.log(`Usage: ${process.argv[1]} [command]`);
+  console.log('Commands:');
+  console.log('  bootstrap      - Show bootstrap instructions');
+  console.log('  use-skill <name> - Load a specific skill');
+  console.log('  list          - List available skills');
+}

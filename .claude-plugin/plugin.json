@@ -1,0 +1,12 @@
+{
+  "name": "aet",
+  "description": "AET (Agentic Engineering Team) suite for Claude Code: Full software development lifecycle with agent collaboration, requirement analysis, development, and testing",
+  "version": "1.0.0",
+  "author": {
+    "name": "leon-wang2021"
+  },
+  "homepage": "https://atomgit.com/leon-wang2021/agent-dev-team",
+  "repository": "https://atomgit.com/leon-wang2021/agent-dev-team",
+  "license": "MIT",
+  "keywords": ["agents", "development", "lifecycle", "requirements", "testing", "collaboration", "workflows"]
+}

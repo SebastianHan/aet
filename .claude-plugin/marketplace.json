@@ -1,0 +1,18 @@
+{
+  "name": "aet",
+  "description": "Development marketplace for AET - agent development lifecycle tools",
+  "owner": {
+    "name": "leon-wang2021"
+  },
+  "plugins": [
+    {
+      "name": "aet",
+      "description": "AET (Agentic Engineering Team) suite for Claude Code: Full software development lifecycle with agent collaboration",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "leon-wang2021"
+      }
+    }
+  ]
+}
